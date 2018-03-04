@@ -19,7 +19,7 @@ class ImEventsServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__.'/views', 'imevents');
         $this->publishes([
             __DIR__.'/../migrations/' => base_path('/database/migrations'),
-            __DIR__.'/views/' => base_path('resources/views/laravelevents/imevents'),
+            __DIR__.'/views/' => base_path('resources/views/laravelevents'),
         ]);
     }
 

@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Laravelevents\ImEvents\Models\ImEvents as ImEvents;
 use Laravelevents\ImEvents\Models\Invitee as Invitee;
 use Laravelevents\ImEvents\Models\User as User;
+use Laravelevents\ImEvents\Notifications\ImeventNotified;
 use Auth;
 use Session;
 use Calendar;
@@ -17,6 +18,18 @@ class ImEventsController extends BaseController
     public function __construct()
     {
         $this->middleware(['auth', 'clearance'])->except('calenderView');
+    }
+
+    public function view($id)
+    {
+      $imevent = ImEvents::findOrFail($id);
+      return view('imevents::imevents.view', compact('imevent'));
+    }
+
+    public function show($id)
+    {
+      $imevent = ImEvents::findOrFail($id);
+      return view('imevents::imevents.show', compact('imevent'));
     }
 
     public function calenderView()
@@ -47,21 +60,21 @@ class ImEventsController extends BaseController
 
         $calendar = \Calendar::addEvents($events);
 
-        return view('imevents::calendar', compact('calendar'));
+        return view('imevents::imevents.calendar', compact('calendar'));
 
     }
 
     public function index()
     {
         $imevents = ImEvents::All();
-        return view('imevents::index', compact('imevents'));
+        return view('imevents::imevents.index', compact('imevents'));
     }
 
     public function create()
     {
         $users = User::pluck('name', 'id');
         $users->prepend('-- Select --', 0);
-        return view('imevents::create',compact('users'));
+        return view('imevents::imevents.create',compact('users'));
     }
 
     public function store(Request $request)
@@ -86,8 +99,10 @@ class ImEventsController extends BaseController
                 'imevent_id'=> $imevent->id,
             ]);
         }
+        $users=User::find($userslist);
+        \Notification::send($users, new ImeventNotified($imevent));
         $imevents = ImEvents::All();
-        return view('imevents::index',compact('imevents'));
+        return view('imevents::imevents.index',compact('imevents'));
     }
 
     public function edit($id)
@@ -99,12 +114,12 @@ class ImEventsController extends BaseController
         foreach( $imevent->invitees as $invitee){
           $oldusers[] = $invitee->user->id;
         }
-        return view('imevents::edit', compact('imevent','users','oldusers'));
+        return view('imevents::imevents.edit', compact('imevent','users','oldusers'));
     }
 
     public function update(Request $request, $id)
     {
-
+        $userslist=array();
         $imevent = ImEvents::findOrFail($id);
         $imevent->subject = $request->input('subject');
         $imevent->type = $request->input('type');
@@ -117,11 +132,21 @@ class ImEventsController extends BaseController
         $imevent->remainder_interval = $request->input('remainder_interval');
         $imevent->save();
         $imevents = ImEvents::All();
-        return view('imevents::index',compact('imevents'));
+        foreach($imevent->invitees as $invitee)
+        {
+        $userslist[] = $invitee->user->id;
+        }
+        $users=User::find($userslist);
+        \Notification::send($users, new ImeventNotified($imevent));
+        return view('imevents::imevents.index',compact('imevents'));
     }
 
     public function destroy($id)
     {
 
+    }
+    public function cancelEvent(Request $request, $id)
+    {
+      
     }
 }

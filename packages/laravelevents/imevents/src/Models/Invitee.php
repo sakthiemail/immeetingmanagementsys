@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model as Eloquent;
 class Invitee extends Eloquent
 {
     protected $table='invitees';
-    protected $fillable = ['user_id','imevent_id'];
+    protected $fillable = ['user_id','imevent_id','accept_status','message'];
 
     public function user()
     {
