@@ -13,7 +13,7 @@ class ImEvents extends Eloquent
     protected $fillable = [
         'user_id',
         'type',
-        'subject',        
+        'subject',
         'description',
         'start_date',
         'end_date',
@@ -30,5 +30,16 @@ class ImEvents extends Eloquent
         return $this->hasMany(
             'Laravelevents\ImEvents\Models\Invitee','imevent_id','id'
         );
+    }
+    public function getEventstatusAttribute()
+    {
+      if($this->status == 1){
+        return "Scheduled";
+      }elseif($this->status == 2){
+        return "Cancelled";
+      }
+      else {
+          return "Expired";
+      }
     }
 }

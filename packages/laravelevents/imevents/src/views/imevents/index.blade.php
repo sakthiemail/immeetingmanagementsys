@@ -11,6 +11,7 @@
                 <th>Description</th>
                 <th>Start Date </th>
                 <th>End Date</th>
+                <th>Status</th>
                 <th>Operations</th>
             </tr>
             </thead>
@@ -19,11 +20,11 @@
 
             @foreach ($imevents as $imevent)
                 <tr>
-
                     <td>{{ $imevent->subject}}</td>
                     <td>{{ $imevent->description }}</td>
                     <td>{{ $imevent->start_date }}</td>
                     <td>{{ $imevent->end_date }}</td>
+                    <td>{{ $imevent->eventstatus }}</td>
                     <td>
                         {!! Form::open(['url'=>'calendar/event/delete/'.$imevent->id,'method' => 'DELETE']) !!}
                         <a href="{{ url('calendar/events/calendar-view') }}" class="btn btn-success text-left" style="margin-right: 3px;">Calendar View</a>
