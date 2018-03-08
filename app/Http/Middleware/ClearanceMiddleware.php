@@ -42,6 +42,30 @@ class ClearanceMiddleware {
             }
         }
 
+        if ($request->is('calandar/event/create')) {
+            if (!Auth::user()->hasPermissionTo('Create Event')) {
+                abort('401');
+            } else {
+                return $next($request);
+            }
+        }
+
+        if ($request->is('calandar/event/*/edit')) {
+            if (!Auth::user()->hasPermissionTo('Delete Event')) {
+                abort('401');
+            } else {
+                return $next($request);
+            }
+        }
+
+        if ($request->isMethod('Delete')) {
+            if (!Auth::user()->hasPermissionTo('Delete Event')) {
+                abort('401');
+            } else {
+                return $next($request);
+            }
+        }
+
         return $next($request);
     }
 }

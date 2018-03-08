@@ -17,6 +17,7 @@ class CreateImeventsTable extends Migration
 
             $table->increments('id');
             $table->integer('user_id')->unsigned();
+            $table->integer('updated_by')->unsigned();
             $table->integer('type')->unsigned()->default('0');
             $table->string('subject');
             $table->text('description')->nullable();
@@ -24,10 +25,11 @@ class CreateImeventsTable extends Migration
             $table->dateTime('end_date');
             $table->text('location')->nullable();
             $table->tinyInteger('billable')->default('0');
-            $table->tinyInteger('status')->default('0');
+            $table->tinyInteger('status')->nullable();
+            $table->tinyInteger('active')->default('1');
             $table->text('reason')->nullable();
-            $table->string('remainder_interval')->nullable();
             $table->foreign("user_id")->references('id')->on('users');
+            $table->foreign("updated_by")->references('id')->on('users');
             $table->timestamps();
         });
     }

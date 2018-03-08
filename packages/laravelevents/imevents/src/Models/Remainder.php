@@ -9,5 +9,6 @@ use Illuminate\Database\Eloquent\Model as Eloquent;
 
 class Remainder extends Eloquent
 {
-    //
+    protected $table='remainders';
+    protected $fillable = ['imevent_id','interval','remainder_sent'];
 }

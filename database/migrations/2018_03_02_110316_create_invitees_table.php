@@ -17,7 +17,7 @@ class CreateInviteesTable extends Migration
             $table->increments('id');
             $table->integer('user_id')->unsigned();
             $table->integer('imevent_id')->unsigned();
-            $table->tinyInteger('accept_status')->default(0);
+            $table->tinyInteger('accept_status')->nullable();
             $table->text('message')->nullable();
             $table->foreign("user_id")->references('id')->on('users');
             $table->foreign("imevent_id")->references('id')->on('imevents');

@@ -2,8 +2,9 @@
 
 namespace Laravelevents\ImEvents\Models;
 
-use Laravelevents\ImEvents\Models\User as User;
+use Laravelevents\ImEvents\Models\Remainder as Remainder;
 use Laravelevents\ImEvents\Models\Invitee as Invitee;
+use Laravelevents\ImEvents\Models\User;
 use Illuminate\Database\Eloquent\Model as Eloquent;
 
 class ImEvents extends Eloquent
@@ -22,14 +23,28 @@ class ImEvents extends Eloquent
         'billable',
         'status',
         'reason',
-        'remainder_interval',
+        'updated_by'
     ];
+
+    public function user()
+    {
+        return $this->belongsTo('Laravelevents\ImEvents\Models\User');
+    }
+
+    public function remainder()
+    {
+        return $this->belongsTo('Laravelevents\ImEvents\Models\Remainder','id','imevent_id');
+    }
 
     public function invitees()
     {
         return $this->hasMany(
             'Laravelevents\ImEvents\Models\Invitee','imevent_id','id'
         );
+    }
+    public function invitee($uid)
+    {
+        return Invitee::where('user_id',$uid)->where('imevent_id',$this->id)->get();
     }
     public function getEventstatusAttribute()
     {

@@ -16,6 +16,9 @@ class ImEventsServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        \Laravelevents\ImEvents\Models\ImEvents::observe( new \Laravelevents\ImEvents\Observers\ImEventObserver ( new \Illuminate\Http\Request));
+        \Laravelevents\ImEvents\Models\Invitee::observe( new \Laravelevents\ImEvents\Observers\InviteeObserver ( new \Illuminate\Http\Request));
+
         $this->loadViewsFrom(__DIR__.'/views', 'imevents');
         $this->publishes([
             __DIR__.'/../migrations/' => base_path('/database/migrations'),

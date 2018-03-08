@@ -12,27 +12,142 @@
 
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
-
-    <link href="{{ asset('css/styles.css') }}" rel="stylesheet">
-
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <!-- Scripts -->
-    <script src="{{ asset('js/app.js') }}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <!--<script src="{{ asset('js/app.js') }}"></script>-->
+
+    <script src="{{ asset('lib/bootstrap/js/bootstrap.min.js') }}"></script>
+    <link rel="stylesheet" href="{{ asset('lib/bootstrap/css/bootstrap.min.css') }}"/>
+    <link rel="stylesheet" href="{{ asset('lib/bootstrap/css/bootstrap-theme.min.css') }}"/>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.9.0/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/2.2.7/fullcalendar.min.js"></script>
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/fullcalendar/2.2.7/fullcalendar.min.css"/>
-	<link href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css" rel="stylesheet">
     <script src="{{ asset('lib/moment/js/moment.min.js') }}"></script>
-    <script src="{{ asset('lib/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js') }}"></script>
+
     <link rel="stylesheet" href="{{ asset('lib/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css') }}" />
+    <script src="{{ asset('lib/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js') }}"></script>
+
+    <link href="{{ asset('lib/select2/css/select2.min.css') }}" rel="stylesheet" />
+    <script src="{{ asset('lib/select2/js/select2.min.js') }}"></script>
+
+    <script src="{{ asset('lib/bootstrap-notify/bootstrap-notify.min.js') }}"></script>
+
+    <!-- BootstrapValidator v0.4.5 bootstrap-validator.min.js -->
+    <script src="{{ asset('lib/bootstrap-validator/bootstrap-validator.min.js') }}"></script>
+
     <script>
         window.Laravel = {!! json_encode([
             'csrfToken' => csrf_token(),
         ]) !!};
         $(function () {
-            $('#datetimepicker1').datetimepicker();
-            $('#datetimepicker2').datetimepicker();
+            $('#startdate,#enddate').datetimepicker({
+                autoclose:true,
+                useCurrent: false,
+            });
+            $("#startdate").on("dp.change", function (e) {
+                $('#enddate').data("DateTimePicker").setMinDate(e.date);
+            });
+            $("#end_date").on("dp.change", function (e) {
+                $('#startdate').data("DateTimePicker").setMaxDate(e.date);
+            });
+
+            $('#js-search-multi').select2();
+
+            $('#js-search-multi').on('select2:opening select2:closing', function( event ) {
+                var $searchfield = $(this).parent().find('.select2-search__field');
+                $searchfield.prop('disabled', true);
+            });
+            $('#event-form')
+                .bootstrapValidator({
+                    // To use feedback icons, ensure that you use Bootstrap v3.1.0 or later
+                    /*feedbackIcons: {
+                        valid: 'glyphicon glyphicon-ok',
+                        invalid: 'glyphicon glyphicon-remove',
+                        validating: 'glyphicon glyphicon-refresh'
+                    },*/
+                    fields: {
+                        'userslist[]': {
+                            validators: {
+                                notEmpty: {
+                                    message: 'Invitee field is required. Please Select at least one user from the list'
+                                }
+                            },
+                        },
+                        type: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'Event type is required'
+                                }
+                            }
+                        },
+                        subject: {
+                            validators: {
+                                stringLength: {
+                                    min: 10,
+                                    message:'Minimum length 5 characters',
+                                },
+                                notEmpty: {
+                                    message: 'Event Subject is required and cannot be empty'
+                                }
+                            }
+                        },
+                        start_date: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'Event Start Date is required and cannot be empty'
+                                }
+                            }
+                        },
+                        end_date: {
+                            validators: {
+                                notEmpty: {
+                                    message: 'Event End Date is required and cannot be empty'
+                                }
+                            }
+                        },
+                        description: {
+                            validators: {
+                                stringLength: {
+                                    min: 8,
+                                    message:'Minimum length 8 characters.'
+                                },
+                                notEmpty: {
+                                    message: 'Event Description is required and cannot be empty',
+                                }
+                            }
+                        },
+                        location: {
+                            validators: {
+                                stringLength: {
+                                    min: 8,
+                                    message:'Minimum length 8 characters.'
+                                },
+                                notEmpty: {
+                                    message: 'Event Location is required and cannot be empty',
+                                }
+                            }
+                        },
+                    }
+                }).on('success.form.bv', function(e) {
+                $('#success_message').slideDown({ opacity: "show" }, "slow") // Do something ...
+                $('#event-form').data('bootstrapValidator').resetForm();
+
+                // Prevent form submission
+                e.preventDefault();
+
+                // Get the form instance
+                var $form = $(e.target);
+
+                // Get the BootstrapValidator instance
+                var bv = $form.data('bootstrapValidator');
+
+                // Use Ajax to submit form data
+                $.post($form.attr('action'), $form.serialize(), function(result) {
+                    console.log(result);
+                }, 'json');
+            });
+
         });
 
     </script>
@@ -64,10 +179,16 @@
                         <li><a href="{{ url('/') }}">Home</a></li>
                         @if (!Auth::guest())
                             <li><a href="{{ route('posts.create') }}">New Article</a></li>
+                            <li class="dropdown">
+                                <a href="#"class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                                    Calender  <span class="caret"></span>
+                                        <ul class="dropdown-menu" role="menu">
+                                            <li><a href="{{ url('/calendar/events') }}">Events</a></li>
+                                        </ul>
+                                </a>
+                            </li>
                         @endif
-
                     </ul>
-
                     <!-- Right Side Of Navbar -->
                     <ul class="nav navbar-nav navbar-right">
                         <!-- Authentication Links -->

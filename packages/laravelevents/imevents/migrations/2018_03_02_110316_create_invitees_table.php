@@ -15,10 +15,12 @@ class CreateInviteesTable extends Migration
     {
         Schema::create('invitees', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('user_id');
-            $table->integer('imevent_id');
-            $table->tinyInteger('accept_status')->default(0);
+            $table->integer('user_id')->unsigned();
+            $table->integer('imevent_id')->unsigned();
+            $table->tinyInteger('accept_status')->nullable();
             $table->text('message')->nullable();
+            $table->foreign("user_id")->references('id')->on('users');
+            $table->foreign("imevent_id")->references('id')->on('imevents');
             $table->timestamps();
         });
     }

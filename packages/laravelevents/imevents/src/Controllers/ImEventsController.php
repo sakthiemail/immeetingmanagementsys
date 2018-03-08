@@ -2,13 +2,14 @@
 
 namespace Laravelevents\ImEvents\Controllers;
 
-use Illuminate\Routing\Controller as BaseController;
+use App\Http\Controllers\Controller as BaseController;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Laravelevents\ImEvents\Models\ImEvents as ImEvents;
 use Laravelevents\ImEvents\Models\Invitee as Invitee;
 use Laravelevents\ImEvents\Models\User as User;
 use Laravelevents\ImEvents\Notifications\ImeventNotified;
+use Validator;
 use Auth;
 use Session;
 use Calendar;
@@ -23,7 +24,16 @@ class ImEventsController extends BaseController
     public function view($id)
     {
       $imevent = ImEvents::findOrFail($id);
-      return view('imevents::imevents.view', compact('imevent'));
+      $invitee=Invitee::where('user_id', Auth::user()->id)->where('imevent_id',$id)->get()->first();
+      //dd($invitee->accept_status);
+      if($invitee->count() == null) {
+          return view('imevents::imevents.401');
+      }elseif($invitee->accept_status == "Declained"){
+          return redirect('calendar/event/'.$id);
+      }
+      else{
+          return view('imevents::imevents.view', compact('imevent'));
+      }
     }
 
     public function show($id)
@@ -32,7 +42,7 @@ class ImEventsController extends BaseController
       return view('imevents::imevents.show', compact('imevent'));
     }
 
-    public function calenderView()
+    public function calendarView()
     {
         $events = [];
 
@@ -50,18 +60,45 @@ class ImEventsController extends BaseController
 
                     new \DateTime($value->start_date),
 
-                    new \DateTime($value->end_date.' +1 day')
+                    new \DateTime($value->end_date.' +1 day'),
+                    $value->id
 
                 );
+
+                $calendar = \Calendar::addEvents($events, [
+                ])->setCallbacks([
+                    "eventClick" => "function(event, jsEvent, view) {
+                        $.ajax({
+                        url: 'popupview/'+event.id,
+                        id:event.id,
+                        token:'".csrf_token()."',
+                        type: 'get',
+                        dataType:'json',
+                        success: function(response){ 
+                        $('#event_name').html(response.subject);
+                        $('#event_description').html(response.description);
+                        $('#event_start_date').html(response.start_date);
+                        $('#event_due_date').html(response.due_date);
+                        $('#event_status').html(response.status);
+                        $('#calendarPopup').modal('show'); 
+                        }
+                        }); 
+                        }"
+                ]);
 
             }
 
         }
 
-        $calendar = \Calendar::addEvents($events);
+      //  $calendar = \Calendar::addEvents($events);
 
         return view('imevents::imevents.calendar', compact('calendar'));
 
+    }
+
+    public function popupView($id){
+        $imtask = ImEvents::findOrFail($id);
+        return json_encode($imtask);
     }
 
     public function index()
@@ -79,7 +116,17 @@ class ImEventsController extends BaseController
 
     public function store(Request $request)
     {
-        $userslist = $request->get('userslist');
+
+        $this->validate($request, [
+            'userslist' => 'required',
+            'type' => 'required',
+            'subject' => 'required|max:255',
+            'description' => 'required',
+            'start_date'    => 'required|date',
+            'end_date'      => 'required|date|after_or_equal:start_date',
+            'location' => 'required',
+        ]);
+
         //dd($userslist);
         $imevent = ImEvents::create([
             'type'=>$request->input('type'),
@@ -90,19 +137,11 @@ class ImEventsController extends BaseController
             'location'=>$request->input('location'),
             'billable'=>($request->input('billable'))?'1':'0',
             'status' => 1,
-            'remainder_interval'=>$request->input('remainder_interval'),
-            'user_id'=>Auth::user()->id
+            'user_id'=>Auth::user()->id,
+            'updated_by'=>Auth::user()->id
             ]);
-        foreach($userslist as $uid) {
-           Invitee::create([
-                'user_id'=> $uid,
-                'imevent_id'=> $imevent->id,
-            ]);
-        }
-        $users=User::find($userslist);
-        \Notification::send($users, new ImeventNotified($imevent));
-        $imevents = ImEvents::All();
-        return view('imevents::imevents.index',compact('imevents'));
+        //return view('imevents::imevents.index',compact('imevents'));
+        return redirect('calendar/events');
     }
 
     public function edit($id)
@@ -116,10 +155,16 @@ class ImEventsController extends BaseController
         }
         return view('imevents::imevents.edit', compact('imevent','users','oldusers'));
     }
-
     public function update(Request $request, $id)
     {
-        $userslist=array();
+        $this->validate($request, [
+            'userslist' => 'required',
+            'subject' => 'required|max:255',
+            'description' => 'required',
+            'start_date'    => 'required|date',
+            'end_date'      => 'required|date|after_or_equal:start_date',
+            'location' => 'required',
+        ]);
         $imevent = ImEvents::findOrFail($id);
         $imevent->subject = $request->input('subject');
         $imevent->type = $request->input('type');
@@ -129,16 +174,8 @@ class ImEventsController extends BaseController
         $imevent->location = $request->input('location');
         $imevent->billable = ($request->input('billable'))?'1':'0';
         $imevent->status  = $request->input('status');
-        $imevent->remainder_interval = $request->input('remainder_interval');
         $imevent->save();
-        $imevents = ImEvents::All();
-        foreach($imevent->invitees as $invitee)
-        {
-        $userslist[] = $invitee->user->id;
-        }
-        $users=User::find($userslist);
-        \Notification::send($users, new ImeventNotified($imevent));
-        return view('imevents::imevents.index',compact('imevents'));
+        return redirect('calendar/events');
     }
 
     public function destroy($id)
@@ -147,6 +184,10 @@ class ImEventsController extends BaseController
     }
     public function cancelEvent(Request $request, $id)
     {
-      
+        $imevent = ImEvents::findOrFail($id);
+        $imevent->reason = $request->input('message');
+        $imevent->status  = 2;
+        $imevent->save();
+        return redirect('calendar/events');
     }
 }

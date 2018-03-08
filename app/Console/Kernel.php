@@ -4,6 +4,7 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Carbon;
 
 class Kernel extends ConsoleKernel
 {
@@ -26,6 +27,13 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')
         //          ->hourly();
+        $schedule->command('email:eventremainder')
+            ->hourly()
+            ->between('7:00', '22:00');
+
+        $schedule->call(function () {
+            DB::table('imevents')->update(['status' => 3 ])->whereDate('end_date', '>', \Carbon::now())->count();
+        })->everyMinute();
     }
 
     /**
