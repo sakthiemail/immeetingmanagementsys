@@ -1,0 +1,17 @@
+{
+    "name": "laravelevents/imevents",
+    "description": "Create a events/meetings between users",
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=5.6.4",
+        "laracasts/flash": "^3.0",
+        "laravel/framework": "5.4.*",
+        "laravelcollective/html": "^5.4",
+        "maddhatter/laravel-fullcalendar": "^1.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "Laravelevents\\ImEvents\\": "src/"
+        }
+    }
+}

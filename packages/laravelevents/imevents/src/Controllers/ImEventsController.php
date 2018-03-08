@@ -90,10 +90,7 @@ class ImEventsController extends BaseController
 
         }
 
-      //  $calendar = \Calendar::addEvents($events);
-
         return view('imevents::imevents.calendar', compact('calendar'));
-
     }
 
     public function popupView($id){
@@ -127,7 +124,6 @@ class ImEventsController extends BaseController
             'location' => 'required',
         ]);
 
-        //dd($userslist);
         $imevent = ImEvents::create([
             'type'=>$request->input('type'),
             'subject'=>$request->input('subject'),
@@ -155,6 +151,7 @@ class ImEventsController extends BaseController
         }
         return view('imevents::imevents.edit', compact('imevent','users','oldusers'));
     }
+
     public function update(Request $request, $id)
     {
         $this->validate($request, [
@@ -169,8 +166,8 @@ class ImEventsController extends BaseController
         $imevent->subject = $request->input('subject');
         $imevent->type = $request->input('type');
         $imevent->description = $request->input('description');
-        $imevent->start_date =Carbon::parse($request->input('start_date'));
-        $imevent->end_date = Carbon::parse($request->input('end_date'));
+        $imevent->start_date =Carbon::parse(date('Y-m-d H:i:s', strtotime($request->input('start_date'))));
+        $imevent->end_date = Carbon::parse(date('Y-m-d H:i:s', strtotime($request->input('end_date'))));
         $imevent->location = $request->input('location');
         $imevent->billable = ($request->input('billable'))?'1':'0';
         $imevent->status  = $request->input('status');
@@ -180,8 +177,16 @@ class ImEventsController extends BaseController
 
     public function destroy($id)
     {
+        $imevent = ImEvents::findOrFail($id);
+        $imevent->remainders()->delete();
+        $imevent->invitees()->delete();
+        $imevent->delete();
 
+        return redirect('calendar/events')
+            ->with('flash_message',
+                'Event successfully deleted');
     }
+
     public function cancelEvent(Request $request, $id)
     {
         $imevent = ImEvents::findOrFail($id);
@@ -189,5 +194,18 @@ class ImEventsController extends BaseController
         $imevent->status  = 2;
         $imevent->save();
         return redirect('calendar/events');
+    }
+
+    public function notifyMessage(){
+    $imeventids =  Invitee::select('imevent_id')
+        ->where('user_id', Auth::user()->id)
+        ->pluck('imevent_id')
+        ->toArray();
+
+    $imevents = ImEvents::whereIn('id',$imeventids)
+        ->where([
+            ['start_date','=',Carbon::now()->addMinutes(30)]
+        ])->get();
+    echo json_encode($imevents);
     }
 }

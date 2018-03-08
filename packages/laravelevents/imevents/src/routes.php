@@ -22,3 +22,4 @@ Route::post('calendar/event/{id}/accept-status',['middleware' => 'web','uses'=>'
 Route::post('calendar/event/{id}/cancel',['middleware' => 'web','uses'=>'ImEventsController@cancelEvent']);
 Route::get('calendar/events/notifications/all',['middleware' => 'web','uses'=>'RemainderController@getAllEvents']);
 Route::get('calendar/events/popupview/{id}',['middleware' => 'web','uses'=>'ImEventsController@popupView']);
+Route::get('calendar/events/notify',['middleware' => 'web','uses'=>'ImEventsController@notifyMessage']);

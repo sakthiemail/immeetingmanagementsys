@@ -48,8 +48,8 @@
             {{ Form::label('description', 'Event Description') }}
             {{ Form::textarea('description',  $imevent->description, array('class' => 'form-control')) }}
             <span class="help-block with-errors"></span>
-            @if ($errors->has('subject'))
-                <span class="error text-danger">{{ $errors->first('end_date') }}</span>
+            @if ($errors->has('description'))
+                <span class="error text-danger">{{ $errors->first('subject') }}</span>
             @endif
         </div>
 
@@ -63,7 +63,7 @@
             </div>
             <span class="help-block with-errors"></span>
             @if ($errors->has('start_date'))
-                <span class="error text-danger">{{ $errors->first('end_date') }}</span>
+                <span class="error text-danger">{{ $errors->first('start_date') }}</span>
             @endif
         </div>
 
@@ -86,7 +86,7 @@
             {{ Form::text('location', $imevent->location, array('class' => 'form-control')) }}
             <span class="help-block with-errors"></span>
             @if ($errors->has('location'))
-                <span class="error text-danger">{{ $errors->first('end_date') }}</span>
+                <span class="error text-danger">{{ $errors->first('location') }}</span>
             @endif
         </div>
 

@@ -82,11 +82,11 @@
     </div>
 
     <div class="form-group">
-        {{ Form::label('location', 'Event Location') }}<span class="text-danger">*</span>
+        {{ Form::label('location', 'Event Location') }}
         {{ Form::text('location', '', array('class' => 'form-control')) }}
         <span class="help-block with-errors"></span>
         @if ($errors->has('end_date'))
-            <span class="error text-danger">{{ $errors->first('end_date') }}</span>
+            <span class="error text-danger">{{ $errors->first('location') }}</span>
         @endif
     </div>
 
@@ -95,6 +95,7 @@
         {{ Form::checkbox('billable', 1,'') }}
         {{ Form::label('yes', 'Yes') }}
     </div>
+
     <div class="form-group">
         @php
         $intervals=[

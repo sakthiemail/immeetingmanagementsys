@@ -42,14 +42,10 @@
         ]) !!};
         $(function () {
             $('#startdate,#enddate').datetimepicker({
-                autoclose:true,
-                useCurrent: false,
-            });
-            $("#startdate").on("dp.change", function (e) {
-                $('#enddate').data("DateTimePicker").setMinDate(e.date);
-            });
-            $("#end_date").on("dp.change", function (e) {
-                $('#startdate').data("DateTimePicker").setMaxDate(e.date);
+                format: "MM dd, yyyy, HH:ii p",
+                showMeridian: true,
+                autoclose: true,
+                todayBtn: true
             });
 
             $('#js-search-multi').select2();
@@ -122,9 +118,6 @@
                                 stringLength: {
                                     min: 8,
                                     message:'Minimum length 8 characters.'
-                                },
-                                notEmpty: {
-                                    message: 'Event Location is required and cannot be empty',
                                 }
                             }
                         },
@@ -236,7 +229,31 @@
                 {{--  @include ('errors.list') Including error file --}}
             </div>
         </div>
-
+        @if (!Auth::guest())
+        <script type="text/javascript">
+            setInterval(function(){
+                notifyMessage();
+            }, 36000);
+            function notifyMessage(){
+                $.ajax({
+                 url: 'calendar/events/notify',
+                token:window.Laravel,
+                type: 'get',
+                dataType:'json',
+                success: function(response){
+                $.each(response, function( index, value ) {
+                   $.notify({
+                       message: 'test' //value.subject
+                   }, {
+                       type: 'info',
+                       timer: 1000,
+                   });
+   	            });
+              }
+                });
+        }
+        </script>
+        @endif
         @yield('content')
 
     </div>

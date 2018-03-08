@@ -1,7 +1,0 @@
-{
-    "name": "laravelevents/imevents",
-    "description": "Create a events/meetings between users",
-    "minimum-stability": "dev",
-    "require": {
-    }
-}

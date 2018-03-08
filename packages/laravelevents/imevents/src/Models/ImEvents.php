@@ -42,6 +42,13 @@ class ImEvents extends Eloquent
             'Laravelevents\ImEvents\Models\Invitee','imevent_id','id'
         );
     }
+
+    public function remainders()
+    {
+        return $this->hasMany(
+            'Laravelevents\ImEvents\Models\Remainder','imevent_id','id'
+        );
+    }
     public function invitee($uid)
     {
         return Invitee::where('user_id',$uid)->where('imevent_id',$this->id)->get();
@@ -56,5 +63,12 @@ class ImEvents extends Eloquent
       else {
           return "Expired";
       }
+    }
+    public function getStartDateAttribute($value) {
+        return \Carbon\Carbon::parse($value)->format('F d, Y, g:i a');
+    }
+
+    public function getEndDateAttribute($value) {
+        return \Carbon\Carbon::parse($value)->format('F d, Y, g:i a');
     }
 }

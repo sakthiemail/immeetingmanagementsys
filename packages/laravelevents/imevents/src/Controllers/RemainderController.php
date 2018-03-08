@@ -100,6 +100,6 @@ class RemainderController extends BaseController
 
             $imeventids =  Invitee::select('imevent_id')->where('user_id', Auth::user()->id)->pluck('imevent_id')->toArray();
             $imevents = ImEvents::whereIn('id',$imeventids)->get();
-            dd($imevents);
+            //dd($imevents);
     }
 }
