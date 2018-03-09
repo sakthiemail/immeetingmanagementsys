@@ -42,65 +42,14 @@ class ImEventsController extends BaseController
       return view('imevents::imevents.show', compact('imevent'));
     }
 
-    public function calendarView()
-    {
-        $events = [];
-
-        $data = ImEvents::all();
-
-        if($data->count()){
-
-            foreach ($data as $key => $value) {
-
-                $events[] = \Calendar::event(
-
-                    $value->subject.", ".$value->location,
-
-                    true,
-
-                    new \DateTime($value->start_date),
-
-                    new \DateTime($value->end_date.' +1 day'),
-                    $value->id
-
-                );
-
-                $calendar = \Calendar::addEvents($events, [
-                ])->setCallbacks([
-                    "eventClick" => "function(event, jsEvent, view) {
-                        $.ajax({
-                        url: 'popupview/'+event.id,
-                        id:event.id,
-                        token:'".csrf_token()."',
-                        type: 'get',
-                        dataType:'json',
-                        success: function(response){ 
-                        $('#event_name').html(response.subject);
-                        $('#event_description').html(response.description);
-                        $('#event_start_date').html(response.start_date);
-                        $('#event_due_date').html(response.due_date);
-                        $('#event_status').html(response.status);
-                        $('#calendarPopup').modal('show'); 
-                        }
-                        }); 
-                        }"
-                ]);
-
-            }
-
-        }
-
-        return view('imevents::imevents.calendar', compact('calendar'));
-    }
-
     public function popupView($id){
-        $imtask = ImEvents::findOrFail($id);
-        return json_encode($imtask);
+        $imevent = ImEvents::findOrFail($id);
+        return json_encode($imevent);
     }
 
     public function index()
     {
-        $imevents = ImEvents::All();
+        $imevents = ImEvents::All()->where("active","=",'1');
         return view('imevents::imevents.index', compact('imevents'));
     }
 
@@ -177,15 +126,61 @@ class ImEventsController extends BaseController
 
     public function destroy($id)
     {
-        $imevent = ImEvents::findOrFail($id);
-        $imevent->remainders()->delete();
-        $imevent->invitees()->delete();
-        $imevent->delete();
-
-        return redirect('calendar/events')
-            ->with('flash_message',
-                'Event successfully deleted');
+        ImEvents::where('id',$id)->update(['active' => 0]);
+        return redirect('calendar/events');
     }
+
+    public function calendarView()
+    {
+        $events = [];
+
+        $data = ImEvents::all()->where('active','=','1');
+
+        if($data->count()){
+
+            foreach ($data as $key => $value) {
+
+                $events[] = \Calendar::event(
+
+                    $value->subject.", ".$value->location,
+
+                    true,
+
+                    new \DateTime($value->start_date),
+
+                    new \DateTime($value->end_date.' +1 day'),
+                    $value->id
+
+                );
+
+                $calendar = \Calendar::addEvents($events, [
+                ])->setCallbacks([
+                    "eventClick" => "function(event, jsEvent, view) {
+                        $.ajax({
+                        url: 'popupview/'+event.id,
+                        id:event.id,
+                        token:'".csrf_token()."',
+                        type: 'get',
+                        dataType:'json',
+                        success: function(response){ 
+                        $('#event_name').html(response.subject);
+                        $('#event_description').html(response.description);
+                        $('#event_start_date').html(response.start_date);
+                        $('#event_due_date').html(response.due_date);
+                        $('#event_status').html(response.status);
+                        $('#calendarPopup').modal('show'); 
+                        }
+                        }); 
+                        }"
+                ]);
+
+            }
+
+        }
+
+        return view('imevents::imevents.calendar', compact('calendar'));
+    }
+
 
     public function cancelEvent(Request $request, $id)
     {

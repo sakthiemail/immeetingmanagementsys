@@ -49,10 +49,12 @@ class ImEvents extends Eloquent
             'Laravelevents\ImEvents\Models\Remainder','imevent_id','id'
         );
     }
+
     public function invitee($uid)
     {
         return Invitee::where('user_id',$uid)->where('imevent_id',$this->id)->get();
     }
+
     public function getEventstatusAttribute()
     {
       if($this->status == 1){
@@ -64,6 +66,7 @@ class ImEvents extends Eloquent
           return "Expired";
       }
     }
+
     public function getStartDateAttribute($value) {
         return \Carbon\Carbon::parse($value)->format('F d, Y, g:i a');
     }
